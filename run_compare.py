@@ -2,11 +2,16 @@
 import os
 import shutil
 import subprocess
+from Bio.Blast.Applications import NcbitblastnCommandline
 
 
 
 
 def set_cmd():
+    """
+    Construct the BLAST commands, generate the next input type (match/not match)
+    :return: makeblastdb_cline, tblastn_cline - two blast commands, next_input - the next input type
+    """
     os.chdir(dir)
 
     new_dir = "{}/compare{}".format(dir, current_compare)
@@ -14,14 +19,14 @@ def set_cmd():
     if current_compare == 1:
         os.mkdir(new_dir)
 
-    # Todo copies
+    # Todo copie compare.pl - maybe not needed here
     shutil.copyfile(src=input_nucl, dst="{}/{}".format(new_dir, input_nucl))
     shutil.copyfile(src=input_protein, dst="{}/{}".format(new_dir, input_protein))
 
     os.chdir(new_dir)
 
     makeblastdb_cline = "makeblastdb -in {} -dbtype nucl".format(input_nucl)
-    tblastn_cline = "tblastn -query {} -db {} -out compare_output{}.txt".format(input_protein, input_nucl,
+    tblastn_cline = "tblastn -query {} -db {} -out compare_output{}.xml -outfmt 5".format(input_protein, input_nucl,
                                                                                 current_compare)
     next_input = "matching_protein_fasta" if compare_files[input_nucl] == "m" else "not_matching_protein_fasta"
 
@@ -46,5 +51,19 @@ for input_nucl in compare_files:
 
     subprocess.run(makeblastdb_cline.split())
     subprocess.run(tblastn_cline.split())
+
+    # Todo here call the compare.pl equivalent
+
+    # Todo call the count function - what for?
+
+    # if( $currentCompare <= $totalCompares )
+    next_compare = current_compare + 1
+    next_file = "{}_output{}.fasta".format(next_input, current_compare)
+
+    os.mkdir("{}/compare{}".format(dir, next_compare))
+
+    shutil.copyfile(next_input, "{}/compare{}/{}".format(dir, next_compare, next_file))
+    input_protein = next_file
+
     print(input_nucl)
     print(compare_files[input_nucl])
