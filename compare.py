@@ -6,7 +6,16 @@ from beautifultable import BeautifulTable
 import sys
 
 
-# Todo need to start the push_fasta_contigs_to_hash function
+
+def push_fasta_contigs_to_dict():
+    in_file = SeqIO.parse(compare_file,"fasta")
+
+    for result in in_file:
+        query_name = "{} ".format(result.id)
+        query_description = result.description
+        full_name = "{}{}".format(query_name,query_description)
+
+        # Todo full_name regex things and assignment to protein hash
 
 
 def push_to_match_hash(key):
