@@ -6,16 +6,23 @@ from beautifultable import BeautifulTable
 import sys
 
 
-
 def push_fasta_contigs_to_dict():
-    in_file = SeqIO.parse(compare_file,"fasta")
+    """
+    Populate the protein dictionary with sequence entries
+    :return:
+    """
+    in_file = SeqIO.parse(compare_file, "fasta")
 
-    for result in in_file:
-        query_name = "{} ".format(result.id)
-        query_description = result.description
-        full_name = "{}{}".format(query_name,query_description)
+    for record in in_file:
+        query_name = "{} ".format(record.id)
+        query_description = record.description
+        full_name = "{}{}".format(query_name, query_description)
 
-        # Todo full_name regex things and assignment to protein hash
+        # Substitute multiple spaces with one space and remove trailing spaces.
+        full_name = ' '.join(full_name.split())
+
+        if full_name not in protein_dict:
+            protein_dict[full_name] = record.seq
 
 
 def push_to_match_hash(key):
