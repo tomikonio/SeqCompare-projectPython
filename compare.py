@@ -50,18 +50,23 @@ def sequence_manipulations(key, query_length, output_file, alphabet):
         SeqIO.write(seq_obj, output_file, "fasta")
 
 
+
+def make_compare():
+    print()
+
+
 protein_dict = {}
 match_dict = {}
 not_match_dict = {}
 
 table = {}
 
-table = BeautifulTable()
-table.column_headers = ["Query_Name", "Query_Length", "Query_Cover_Length", "Cover_Perc Acc_No", "Length", "Desc",
-                        "E_Value", "Bit_Score", "Frame", "QStart", "QEnd", "Hit_Start", "Hit_End",
-                        "Positives Identical"]
-print(table)
-
+# table = BeautifulTable()
+# table.column_headers = ["Query_Name", "Query_Length", "Query_Cover_Length", "Cover_Perc Acc_No", "Length", "Desc",
+#                         "E_Value", "Bit_Score", "Frame", "QStart", "QEnd", "Hit_Start", "Hit_End",
+#                         "Positives Identical"]
+# print(table)
+#
 input_file = sys.argv[1]
 compare_file = sys.argv[2]
 
@@ -69,3 +74,21 @@ compare_file = sys.argv[2]
 # for query_result in SearchIO.parse(input_handle, format='blast-xml'):
 #     # TODO better use the the BLAST libraries in order to parse the blast outputs
 #     print()
+
+input_protein = SearchIO.parse(input_file, format="blast-xml")
+progress = 0
+count_found_hits = 0
+count_found_no_hits = 0
+
+alphabet = "protein"
+out_file_matching = SeqIO.parse("matching_protein_fasta", "fasta")
+out_file_not_matching = SeqIO.parse("not_matching_protein_fasta", "fasta")
+
+try:
+    with open("matching_protein.txt", "w") as FILEHANDLE1, open("not_matching_protein.txt", "w") as FILEHANDLE2, open(
+            "sorted_not_matching_protein.txt", "w") as FILEHANDLE3, open("repeating_protein.txt", "w") as FILEHANDLE4:
+
+        make_compare()
+
+except IOError as e:
+    print("Operation failed: {}".format(e.strerror))
