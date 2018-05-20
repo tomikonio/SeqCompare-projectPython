@@ -70,7 +70,7 @@ def make_compare():
             else:
                 global count_found_no_hits
                 count_found_no_hits += 1
-                FILEHANDLE2.write("{} {}---===***No Hits Found***===---\n".format(full_name, len(query_result)))
+                FILEHANDLE2.write("{} {}---===***No Hits Found***===---\n".format(full_name, query_result.seq_len))
                 # Todo check if len(query_result) is the same as $result->query_length in perl
 
                 # write to dict of all not matching
