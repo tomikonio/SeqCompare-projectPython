@@ -77,7 +77,7 @@ def make_compare():
                 push_to_not_match_dict(full_name)
 
                 # write to not_matching_protein_fasta
-                sequence_manipulations(full_name, len(query_result), out_file_not_matching, alphabet)
+                sequence_manipulations(full_name, query_result.seq_len, out_file_not_matching, alphabet)
 
         # hits found
         else:
@@ -85,6 +85,28 @@ def make_compare():
             temp_hsp = ""
             hit = next(query_result.hits)
             # Todo check if next(query_result.hits) is the same as $result->next_hit in perl
+            hsp = next(hit.hsps)
+            query_cover_len = hsp.query_span
+            # Todo check if hsp.query_span is the same as $hsp->end('query') - $hsp->start('query') in perl
+
+            # Select only the best hsp hit-> # and $highest_score < $hit->bits
+            if hsp.evalue <= 1e-040:
+
+                # matched repeating_protein
+                if full_name in match_dict:
+                    FILEHANDLE3.write("{}\t".format(full_name))
+                    FILEHANDLE3.write("\n")
+                else:
+                    global count_found_no_hits
+                    count_found_no_hits += 1
+
+                    push_to_not_match_dict(full_name)
+                    sequence_manipulations(full_name,query_result.seq_len,out_file_matching,alphabet)
+
+                    FILEHANDLE1.write("{} {} {} {} {} {} {} {} {} {}".format(full_name, query_result.seq_len, query_cover_len, hit.accession, hit.seq_len, hit.description,"""hit.segnificance""", hsp.bits, hsp.query_frame, hsp.query_start, hsp.query_end, hsp.hit_start, hsp.hit_end,   ))
+
+
+
 
 
 
