@@ -124,18 +124,35 @@ def make_compare():
 
                     FILEHANDLE2.write("{}\t{}\n".format(full_name, query_result.seq_len))
 
-                    name_and_length = full_name[7:]  # slice the first 7 characters off the string (why?)
-                    # full name in position [7] is the query_result.description, this is a number and thus this number
+                    name_and_length = "{}\t {}\n".format(full_name, query_result.seq_len)
+                    fragment = name_and_length[7:]  # slice the first 7 characters off the string (why?)
+
+                    # full name in position [7] is the start of the query_result.description, this is a number and thus this number
                     # is made the key in the table dictionary
                     # later, we want output the table dictionary to the FILEHANDELE5 file in an ascending sorted order.
-                    parts = name_and_length.split(" ")
+
+                    parts = fragment.split(" ")
                     key = parts[0]
                     value = name_and_length
 
                     if key not in table:
                         table[key] = []
-                    table[key].append(name_and_length)
+                    table[key].append(value)
 
+
+def make_sorted_not_matching_file():
+    """
+    Outputs the values held in the table dict to the make_sorted_not_matching_protein.txt file
+    Each line is represents a sequence
+    Because one dict entry may hold several sequence names, each dict entry is iterated over
+    :return:
+    """
+    key_list = list(table.keys())
+    key_list.sort(key=int)  # sort the dict keys by ascending order
+
+    for key in key_list:
+        for sequence in table[key]:
+            FILEHANDLE5.write("{}\n".format(sequence))
 
 
 protein_dict = {}
@@ -179,7 +196,7 @@ except IOError as e:
     print("Operation failed: {}".format(e.strerror))
 
 try:
-    with open("sorted_not_matching_protein.txt", "w"):
-        some_code()
+    with open("sorted_not_matching_protein.txt", "w") as FILEHANDLE5:
+        make_sorted_not_matching_file()
 except IOError as e:
     print("Operation failed: {}".format(e.strerror))
