@@ -125,6 +125,9 @@ def make_compare():
                     FILEHANDLE2.write("{}\t{}\n".format(full_name, query_result.seq_len))
 
                     name_and_length = full_name[7:]  # slice the first 7 characters off the string (why?)
+                    # full name in position [7] is the query_result.description, this is a number and thus this number
+                    # is made the key in the table dictionary
+                    # later, we want output the table dictionary to the FILEHANDELE5 file in an ascending sorted order.
                     parts = name_and_length.split(" ")
                     key = parts[0]
                     value = name_and_length
