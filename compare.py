@@ -104,7 +104,7 @@ def make_compare():
                     sequence_manipulations(full_name, query_result.seq_len, out_file_matching, alphabet)
 
                     FILEHANDLE1.write(
-                        "{} {} {} {} {} {} {} {} {} {}".format(full_name, query_result.seq_len, query_cover_len,
+                        "{} {} {} {} {} {} {} {} {} {} \n".format(full_name, query_result.seq_len, query_cover_len,
                                                                hit.accession, hit.seq_len, hit.description,
                                                                "hit.segnificance", hsp.bits, hsp.query_frame,
                                                                hsp.query_start, hsp.query_end, hsp.hit_start,
