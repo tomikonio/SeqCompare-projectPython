@@ -25,7 +25,7 @@ def push_fasta_contigs_to_dict():
             protein_dict[full_name] = record.seq
 
 
-def push_to_match_hash(key):
+def push_to_match_dict(key):
     match_dict[key] = "1"
 
 
@@ -97,18 +97,41 @@ def make_compare():
                     FILEHANDLE3.write("{}\t".format(full_name))
                     FILEHANDLE3.write("\n")
                 else:
+                    global count_found_hits
+                    count_found_hits += 1
+
+                    push_to_match_dict(full_name)
+                    sequence_manipulations(full_name, query_result.seq_len, out_file_matching, alphabet)
+
+                    FILEHANDLE1.write(
+                        "{} {} {} {} {} {} {} {} {} {}".format(full_name, query_result.seq_len, query_cover_len,
+                                                               hit.accession, hit.seq_len, hit.description,
+                                                               "hit.segnificance", hsp.bits, hsp.query_frame,
+                                                               hsp.query_start, hsp.query_end, hsp.hit_start,
+                                                               hsp.hit_end, "$hsp->frac_conserved",
+                                                               "$hsp->frac_identical"))
+            else:
+
+                if full_name in not_match_dict:
+                    FILEHANDLE3.write("{}\t".format(full_name))
+                    FILEHANDLE3.write("\n")
+                else:
                     global count_found_no_hits
                     count_found_no_hits += 1
 
                     push_to_not_match_dict(full_name)
-                    sequence_manipulations(full_name,query_result.seq_len,out_file_matching,alphabet)
+                    sequence_manipulations(full_name, query_result.seq_len, out_file_not_matching, alphabet)
 
-                    FILEHANDLE1.write("{} {} {} {} {} {} {} {} {} {}".format(full_name, query_result.seq_len, query_cover_len, hit.accession, hit.seq_len, hit.description,"""hit.segnificance""", hsp.bits, hsp.query_frame, hsp.query_start, hsp.query_end, hsp.hit_start, hsp.hit_end,   ))
+                    FILEHANDLE2.write("{}\t{}\n".format(full_name, query_result.seq_len))
 
+                    name_and_length = full_name[7:]  # slice the first 7 characters off the string (why?)
+                    parts = name_and_length.split(" ")
+                    key = parts[0]
+                    value = name_and_length
 
-
-
-
+                    if key not in table:
+                        table[key] = []
+                    table[key].append(name_and_length)
 
 
 
@@ -147,7 +170,13 @@ try:
     with open("matching_protein.txt", "w") as FILEHANDLE1, open("not_matching_protein.txt", "w") as FILEHANDLE2, open(
             "sorted_not_matching_protein.txt", "w") as FILEHANDLE3, open("repeating_protein.txt", "w") as FILEHANDLE4:
 
-        make_compare(count_found_no_hits)
+        make_compare()
 
+except IOError as e:
+    print("Operation failed: {}".format(e.strerror))
+
+try:
+    with open("sorted_not_matching_protein.txt", "w"):
+        some_code()
 except IOError as e:
     print("Operation failed: {}".format(e.strerror))
