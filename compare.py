@@ -1,8 +1,8 @@
 from Bio import SeqIO
 from Bio import SearchIO
 from Bio.Seq import Seq
-from flask_table import Table, Col
-from beautifultable import BeautifulTable
+# from flask_table import Table, Col
+# from beautifultable import BeautifulTable
 import sys
 
 
@@ -43,14 +43,17 @@ def sequence_manipulations(key, query_length, output_file, alphabet):
     :return:
     """
     query_length_string = "length={}".format(query_length)
-    dict_val = protein_dict[key]
+    #dict_val = protein_dict[key]
 
-    if protein_dict[key]:
-        seq_obj = Seq(dict_val, alphabet)
+    if key in protein_dict:
+        seq_obj = Seq(protein_dict[key], alphabet)
         SeqIO.write(seq_obj, output_file, "fasta")
 
 
 def make_compare():
+    global count_found_no_hits
+    global count_found_hits
+
     FILEHANDLE1.write(columns)
     FILEHANDLE2.write(columns)
 
@@ -68,7 +71,7 @@ def make_compare():
                 FILEHANDLE3.write("{}\t".format(full_name))
                 FILEHANDLE3.write("\n")
             else:
-                global count_found_no_hits
+
                 count_found_no_hits += 1
                 FILEHANDLE2.write("{} {}---===***No Hits Found***===---\n".format(full_name, query_result.seq_len))
                 # Todo check if len(query_result) is the same as $result->query_length in perl
@@ -83,9 +86,9 @@ def make_compare():
         else:
             temp_evalue = -1
             temp_hsp = ""
-            hit = next(query_result.hits)
+            hit = query_result.hits[0]
             # Todo check if next(query_result.hits) is the same as $result->next_hit in perl
-            hsp = next(hit.hsps)
+            hsp = hit.hsps[0]
             query_cover_len = hsp.query_span
             # Todo check if hsp.query_span is the same as $hsp->end('query') - $hsp->start('query') in perl
 
@@ -97,26 +100,26 @@ def make_compare():
                     FILEHANDLE3.write("{}\t".format(full_name))
                     FILEHANDLE3.write("\n")
                 else:
-                    global count_found_hits
+
                     count_found_hits += 1
 
                     push_to_match_dict(full_name)
                     sequence_manipulations(full_name, query_result.seq_len, out_file_matching, alphabet)
 
                     FILEHANDLE1.write(
-                        "{} {} {} {} {} {} {} {} {} {} \n".format(full_name, query_result.seq_len, query_cover_len,
+                        "{} {} {} {} {} {} {} {} {} {} {} {} {} {} {}\n".format(full_name, query_result.seq_len, query_cover_len,
                                                                hit.accession, hit.seq_len, hit.description,
-                                                               "hit.segnificance", hsp.bits, hsp.query_frame,
+                                                               "hit.segnificance", hsp.bitscore, hsp.query_frame,
                                                                hsp.query_start, hsp.query_end, hsp.hit_start,
-                                                               hsp.hit_end, "$hsp->frac_conserved",
-                                                               "$hsp->frac_identical"))
+                                                               hsp.hit_end, "hsp.frac_conserved",
+                                                               "hsp.frac_identical"))
             else:
 
                 if full_name in not_match_dict:
                     FILEHANDLE3.write("{}\t".format(full_name))
                     FILEHANDLE3.write("\n")
                 else:
-                    global count_found_no_hits
+
                     count_found_no_hits += 1
 
                     push_to_not_match_dict(full_name)
@@ -160,7 +163,7 @@ match_dict = {}
 not_match_dict = {}
 
 table = {}
-
+print("Started the compare file")
 # table = BeautifulTable()
 # table.column_headers = ["Query_Name", "Query_Length", "Query_Cover_Length", "Cover_Perc Acc_No", "Length", "Desc",
 #                         "E_Value", "Bit_Score", "Frame", "QStart", "QEnd", "Hit_Start", "Hit_End",
@@ -175,7 +178,7 @@ compare_file = sys.argv[2]
 #     # TODO better use the the BLAST libraries in order to parse the blast outputs
 #     print()
 
-columns = "Query_Name Query_Length Query_Cover_Length Cover_Perc Acc_No Length Desc E_Value Bit_Score Frame QStart QEnd Hit_Start Hit_End Positives Identical"
+columns = "Query_Name Query_Length Query_Cover_Length Cover_Perc Acc_No Length Desc E_Value Bit_Score Frame QStart QEnd Hit_Start Hit_End Positives Identical\n"
 
 input_protein = SearchIO.parse(input_file, format="blast-xml")
 progress = 0
@@ -183,6 +186,9 @@ count_found_hits = 0
 count_found_no_hits = 0
 
 alphabet = "protein"
+
+with open("matching_protein_fasta", "w") as OUT_FILE_MATCHING_HANDLE, open("not_matching_protein_fasta", "w") as OUT_FILE_NOt__MATCHING_HANDLE:
+    print("making files....")
 out_file_matching = SeqIO.parse("matching_protein_fasta", "fasta")
 out_file_not_matching = SeqIO.parse("not_matching_protein_fasta", "fasta")
 

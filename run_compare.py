@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 from Bio.Blast.Applications import NcbitblastnCommandline
+import sort
 
 
 
@@ -20,6 +21,7 @@ def set_cmd():
         os.mkdir(new_dir)
 
     # Todo copie compare.pl - maybe not needed here
+    shutil.copyfile(src="compare.py", dst="{}/compare.py".format(new_dir))
     shutil.copyfile(src=input_nucl, dst="{}/{}".format(new_dir, input_nucl))
     shutil.copyfile(src=input_protein, dst="{}/{}".format(new_dir, input_protein))
 
@@ -36,7 +38,7 @@ def set_cmd():
 
 dir = os.getcwd()
 # files to be compared with
-compare_files = {"fgp2.fasta": "m"}
+compare_files = {"fgp2.fasta": "m", "9802.fasta": "m"}
 # compare_files = {"fgp2.fasta": "m", "9802.fasta": "m", "6803.fasta": "nm", "29413.fasta": "nm", "7120.fasta": "nm",
 #                  "7942.fasta": "nm"}
 # match_type = ("m", "m", "nm", "nm", "nm", "nm")
@@ -53,6 +55,8 @@ for input_nucl in compare_files:
     subprocess.run(tblastn_cline.split())
 
     # Todo here call the compare.pl equivalent
+    subprocess.run(["python", "compare.py", "compare_output{}.xml".format(current_compare), input_nucl])
+    sort.sort(next_input,"sorted_{}.txt".format(next_input) )
 
     # Todo call the count function - what for?
 
@@ -64,6 +68,6 @@ for input_nucl in compare_files:
 
     shutil.copyfile(next_input, "{}/compare{}/{}".format(dir, next_compare, next_file))
     input_protein = next_file
-
+    current_compare += 1
     print(input_nucl)
     print(compare_files[input_nucl])
