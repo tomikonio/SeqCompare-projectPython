@@ -19,11 +19,12 @@ def set_cmd():
 
     if current_compare == 1:
         os.mkdir(new_dir)
+        shutil.copyfile(src=input_protein, dst="{}/{}".format(new_dir, input_protein))
 
     # Todo copie compare.pl - maybe not needed here
     shutil.copyfile(src="compare.py", dst="{}/compare.py".format(new_dir))
     shutil.copyfile(src=input_nucl, dst="{}/{}".format(new_dir, input_nucl))
-    shutil.copyfile(src=input_protein, dst="{}/{}".format(new_dir, input_protein))
+    #shutil.copyfile(src=input_protein, dst="{}/{}".format(new_dir, input_protein))
 
     os.chdir(new_dir)
 
@@ -55,7 +56,7 @@ for input_nucl in compare_files:
     subprocess.run(tblastn_cline.split())
 
     # Todo here call the compare.pl equivalent
-    subprocess.run(["python", "compare.py", "compare_output{}.xml".format(current_compare), input_nucl])
+    subprocess.run(["python", "compare.py", "compare_output{}.xml".format(current_compare), input_protein])
     sort.sort(next_input,"sorted_{}.txt".format(next_input) )
 
     # Todo call the count function - what for?

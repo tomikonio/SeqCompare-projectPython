@@ -1,6 +1,7 @@
 from Bio import SeqIO
 from Bio import SearchIO
 from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 # from flask_table import Table, Col
 # from beautifultable import BeautifulTable
 import sys
@@ -14,16 +15,19 @@ def push_fasta_contigs_to_dict():
     in_file = SeqIO.parse(compare_file, "fasta")
 
     for record in in_file:
-        query_name = "{} ".format(record.id)
+        #query_name = "{} ".format(record.id)
+        print("record decription is: "+ record.description)
         query_description = record.description
-        full_name = "{}{}".format(query_name, query_description)
-
+        #full_name = "{} {}".format(query_name, query_description)
+        full_name = "{}".format(query_description)
+        print("Full name is " + full_name)
         # Substitute multiple spaces with one space and remove trailing spaces.
         full_name = ' '.join(full_name.split())
 
+
         if full_name not in protein_dict:
             protein_dict[full_name] = record.seq
-
+    print(" ")
 
 def push_to_match_dict(key):
     match_dict[key] = "1"
@@ -45,10 +49,13 @@ def sequence_manipulations(key, query_length, output_file, alphabet):
     query_length_string = "length={}".format(query_length)
     #dict_val = protein_dict[key]
 
+    print("The key is is: "+ key)
     if key in protein_dict:
-        seq_obj = Seq(protein_dict[key], alphabet)
-        SeqIO.write(seq_obj, output_file, "fasta")
-
+        print("Hellpppomem")
+        seqrecord_obj = SeqRecord(Seq(str(protein_dict[key]), alphabet))
+        seqrecord_obj.description = key
+        seqrecord_obj.id = ""
+        SeqIO.write(seqrecord_obj, output_file, "fasta")
 
 def make_compare():
     global count_found_no_hits
@@ -179,30 +186,30 @@ compare_file = sys.argv[2]
 #     print()
 
 columns = "Query_Name Query_Length Query_Cover_Length Cover_Perc Acc_No Length Desc E_Value Bit_Score Frame QStart QEnd Hit_Start Hit_End Positives Identical\n"
-
-input_protein = SearchIO.parse(input_file, format="blast-xml")
+format = "blast-xml"    #blast-xml
+input_protein = SearchIO.parse(input_file, format=format)
 progress = 0
 count_found_hits = 0
 count_found_no_hits = 0
 
 alphabet = "protein"
 
-with open("matching_protein_fasta", "w") as OUT_FILE_MATCHING_HANDLE, open("not_matching_protein_fasta", "w") as OUT_FILE_NOt__MATCHING_HANDLE:
+with open("matching_protein_fasta", "w") as out_file_matching, open("not_matching_protein_fasta", "w") as out_file_not_matching:
     print("making files....")
-out_file_matching = SeqIO.parse("matching_protein_fasta", "fasta")
-out_file_not_matching = SeqIO.parse("not_matching_protein_fasta", "fasta")
+# out_file_matching = "matching_protein_fasta"
+# out_file_not_matching = "not_matching_protein_fasta"
 
-try:
-    with open("matching_protein.txt", "w") as FILEHANDLE1, open("not_matching_protein.txt", "w") as FILEHANDLE2, open(
-            "sorted_not_matching_protein.txt", "w") as FILEHANDLE3, open("repeating_protein.txt", "w") as FILEHANDLE4:
+    try:
+        with open("matching_protein.txt", "w") as FILEHANDLE1, open("not_matching_protein.txt", "w") as FILEHANDLE2, open(
+                "sorted_not_matching_protein.txt", "w") as FILEHANDLE3, open("repeating_protein.txt", "w") as FILEHANDLE4:
 
-        make_compare()
+            make_compare()
 
-except IOError as e:
-    print("Operation failed: {}".format(e.strerror))
+    except IOError as e:
+        print("Operation failed: {}".format(e.strerror))
 
-try:
-    with open("sorted_not_matching_protein.txt", "w") as FILEHANDLE5:
-        make_sorted_not_matching_file()
-except IOError as e:
-    print("Operation failed: {}".format(e.strerror))
+    try:
+        with open("sorted_not_matching_protein.txt", "w") as FILEHANDLE5:
+            make_sorted_not_matching_file()
+    except IOError as e:
+        print("Operation failed: {}".format(e.strerror))
