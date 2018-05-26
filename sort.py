@@ -9,7 +9,8 @@ def sort(input_file, output_file):
             chars = line.split(" ")
 
             if chars[0] == ">":
-                fragment = line[7:]
+
+                fragment = line[9:]     # was 7 but there is additional space
                 parts = fragment.split(" ")
                 key = parts[0]
                 value = line[1:]
@@ -24,7 +25,7 @@ def sort(input_file, output_file):
         key_list.sort(key=int)  # sort the keys in ascending order
         for key in key_list:
             for sequence in table[key]:
-                FILEHANDLE2.write("{}\n".format(sequence))
+                FILEHANDLE2.write("{}\n".format(sequence.lstrip()))     # lstrip to remove the leading whitespace
 
 
 if __name__ == "__main__":
