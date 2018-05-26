@@ -16,18 +16,18 @@ def push_fasta_contigs_to_dict():
 
     for record in in_file:
         #query_name = "{} ".format(record.id)
-        print("record decription is: "+ record.description)
+        #print("record decription is: "+ record.description)
         query_description = record.description
         #full_name = "{} {}".format(query_name, query_description)
         full_name = "{}".format(query_description)
-        print("Full name is " + full_name)
+        #print("Full name is " + full_name)
         # Substitute multiple spaces with one space and remove trailing spaces.
         full_name = ' '.join(full_name.split())
 
 
         if full_name not in protein_dict:
             protein_dict[full_name] = record.seq
-    print(" ")
+    #print(" ")
 
 def push_to_match_dict(key):
     match_dict[key] = "1"
@@ -49,9 +49,8 @@ def sequence_manipulations(key, query_length, output_file, alphabet):
     query_length_string = "length={}".format(query_length)
     #dict_val = protein_dict[key]
 
-    print("The key is is: "+ key)
+    #print("The key is is: "+ key)
     if key in protein_dict:
-        print("Hellpppomem")
         seqrecord_obj = SeqRecord(Seq(str(protein_dict[key]), alphabet))
         seqrecord_obj.description = key
         seqrecord_obj.id = ""
@@ -75,6 +74,7 @@ def make_compare():
         if len(query_result.hit_keys) == 0:
             # if this protein already exists as not matched, write it to repeating_protein.txt
             if full_name in not_match_dict:
+                print("repeating......")
                 FILEHANDLE3.write("{}\t".format(full_name))
                 FILEHANDLE3.write("\n")
             else:
@@ -104,6 +104,7 @@ def make_compare():
 
                 # matched repeating_protein
                 if full_name in match_dict:
+                    print("repeating......")
                     FILEHANDLE3.write("{}\t".format(full_name))
                     FILEHANDLE3.write("\n")
                 else:
@@ -123,6 +124,7 @@ def make_compare():
             else:
 
                 if full_name in not_match_dict:
+                    print("repeating......")
                     FILEHANDLE3.write("{}\t".format(full_name))
                     FILEHANDLE3.write("\n")
                 else:
@@ -200,8 +202,7 @@ with open("matching_protein_fasta", "w") as out_file_matching, open("not_matchin
 # out_file_not_matching = "not_matching_protein_fasta"
 
     try:
-        with open("matching_protein.txt", "w") as FILEHANDLE1, open("not_matching_protein.txt", "w") as FILEHANDLE2, open(
-                "sorted_not_matching_protein.txt", "w") as FILEHANDLE3, open("repeating_protein.txt", "w") as FILEHANDLE4:
+        with open("matching_protein.txt", "w") as FILEHANDLE1, open("not_matching_protein.txt", "w") as FILEHANDLE2, open("repeating_protein.txt", "w") as FILEHANDLE3:
 
             make_compare()
 
