@@ -119,8 +119,8 @@ def make_compare():
                                                                hit.accession, hit.seq_len, hit.description,
                                                                "hit.segnificance", hsp.bitscore, hsp.query_frame,
                                                                hsp.query_start, hsp.query_end, hsp.hit_start,
-                                                               hsp.hit_end, "hsp.frac_conserved",
-                                                               "hsp.frac_identical"))
+                                                               hsp.hit_end, hsp.pos_num,
+                                                               hsp.ident_num))
             else:
 
                 if full_name in not_match_dict:

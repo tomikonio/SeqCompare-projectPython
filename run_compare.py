@@ -35,6 +35,21 @@ def set_cmd():
 
     return makeblastdb_cline, tblastn_cline, next_input
 
+def count():
+    """
+    Counts the number of sequences in the output file (the next input file)
+    :return:
+    """
+    counter = 0
+    try:
+        with open(next_input, "r") as FILEHANDLE2:
+            for line in FILEHANDLE2:
+                if line[0] == ">":
+                    counter += 1
+        with open("counts.txt", "a") as FILEHANDLE1:
+            FILEHANDLE1.write("{}/{}:{}\n".format(input_nucl, next_input, counter))
+    except IOError as e:
+        print("Operation failed: {}".format(e.strerror))
 
 
 dir = os.getcwd()
@@ -49,6 +64,9 @@ total_compares = len(compare_files)
 current_compare = 1
 input_protein = initial_file
 
+with open("counts.txt", "w") as FILEHANDLE1:
+    print("creating couts file...")
+
 for input_nucl in compare_files:
     makeblastdb_cline, tblastn_cline, next_input = set_cmd()
 
@@ -60,6 +78,8 @@ for input_nucl in compare_files:
     sort.sort(next_input,"sorted_{}.txt".format(next_input) )
 
     # Todo call the count function - what for?
+
+    count()
 
     # if( $currentCompare <= $totalCompares )
     next_compare = current_compare + 1
