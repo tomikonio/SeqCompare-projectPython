@@ -4,6 +4,7 @@ import shutil
 import subprocess
 from Bio.Blast.Applications import NcbitblastnCommandline
 import sort
+import compare
 
 
 
@@ -73,8 +74,9 @@ with open("counts.txt", "w") as FILEHANDLE1:
         subprocess.run(tblastn_cline.split())
 
         # Todo here call the compare.pl equivalent
-        subprocess.run(["python", "compare.py", "compare_output{}.xml".format(current_compare), input_protein])
-        sort.sort(next_input,"sorted_{}.txt".format(next_input) )
+        # subprocess.run(["python", "compare.py", "compare_output{}.xml".format(current_compare), input_protein])
+        compare.start("compare_output{}.xml".format(current_compare), input_protein)
+        sort.sort(next_input,"sorted_{}.txt".format(next_input))
 
         # Todo call the count function - what for?
 
