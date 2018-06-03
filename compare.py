@@ -58,11 +58,21 @@ def sequence_manipulations(key, query_length, output_file, alphabet, protein_dic
         SeqIO.write(seqrecord_obj, output_file, "fasta")
 
 
-def make_compare(compare_file, protein_dict, match_dict, not_match_dict, table, columns,
-                 input_protein, count_found_hits, count_found_no_hits, alphabet, out_file_matching,
-                 out_file_not_matching, FILEHANDLE1, FILEHANDLE2, FILEHANDLE3):
+def make_compare(compare_file, table, input_protein, out_file_matching, out_file_not_matching, FILEHANDLE1, FILEHANDLE2,
+                 FILEHANDLE3):
     # global count_found_no_hits
     # global count_found_hits
+
+    protein_dict = {}
+    match_dict = {}
+    not_match_dict = {}
+
+    columns = "Query_Name Query_Length Query_Cover_Length Cover_Perc Acc_No Length Desc E_Value Bit_Score Frame QStart QEnd Hit_Start Hit_End Positives Identical\n"
+
+    count_found_hits = 0
+    count_found_no_hits = 0
+
+    alphabet = "protein"
 
     FILEHANDLE1.write(columns)
     FILEHANDLE2.write(columns)
@@ -140,7 +150,8 @@ def make_compare(compare_file, protein_dict, match_dict, not_match_dict, table, 
                     count_found_no_hits += 1
 
                     push_to_not_match_dict(full_name, not_match_dict)
-                    sequence_manipulations(full_name, query_result.seq_len, out_file_not_matching, alphabet, protein_dict)
+                    sequence_manipulations(full_name, query_result.seq_len, out_file_not_matching, alphabet,
+                                           protein_dict)
 
                     FILEHANDLE2.write("{}\t{}\n".format(full_name, query_result.seq_len))
 
@@ -177,20 +188,12 @@ def make_sorted_not_matching_file(table, FILEHANDLE5):
 
 def start(input_file, compare_file):
     print("Started the compare file")
-    protein_dict = {}
-    match_dict = {}
-    not_match_dict = {}
 
     table = {}
 
-    columns = "Query_Name Query_Length Query_Cover_Length Cover_Perc Acc_No Length Desc E_Value Bit_Score Frame QStart QEnd Hit_Start Hit_End Positives Identical\n"
     blast_type = "blast-xml"  # blast-xml
     input_protein = SearchIO.parse(input_file, format=blast_type)
     progress = 0
-    count_found_hits = 0
-    count_found_no_hits = 0
-
-    alphabet = "protein"
 
     with open("matching_protein_fasta", "w") as out_file_matching, open("not_matching_protein_fasta",
                                                                         "w") as out_file_not_matching:
@@ -200,11 +203,11 @@ def start(input_file, compare_file):
 
         try:
             with open("matching_protein.txt", "w") as FILEHANDLE1, open("not_matching_protein.txt",
-                            "w") as FILEHANDLE2, open("repeating_protein.txt", "w") as FILEHANDLE3:
+                                                                        "w") as FILEHANDLE2, open(
+            "repeating_protein.txt", "w") as FILEHANDLE3:
 
-                make_compare(compare_file, protein_dict, match_dict, not_match_dict, table, columns,
-                             input_protein, count_found_hits, count_found_no_hits, alphabet, out_file_matching,
-                             out_file_not_matching, FILEHANDLE1, FILEHANDLE2, FILEHANDLE3)
+                make_compare(compare_file, table, input_protein, out_file_matching, out_file_not_matching, FILEHANDLE1,
+                             FILEHANDLE2, FILEHANDLE3)
 
         except IOError as e:
             print("Operation failed: {}".format(e.strerror))
