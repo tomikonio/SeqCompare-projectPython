@@ -109,14 +109,14 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
         else:
             temp_evalue = -1
             temp_hsp = ""
-            hit = query_result.hits[0]
+            hit = blast_record.alignments[0]
             # Todo check if next(query_result.hits) is the same as $result->next_hit in perl
             hsp = hit.hsps[0]
-            query_cover_len = hsp.query_span
+            query_cover_len = hsp.query_end - hsp.query_start
             # Todo check if hsp.query_span is the same as $hsp->end('query') - $hsp->start('query') in perl
 
             # Select only the best hsp hit-> # and $highest_score < $hit->bits
-            if hsp.evalue <= 1e-040:
+            if hsp.expect <= 1e-040:
 
                 # matched repeating_protein
                 if full_name in match_dict:
@@ -128,19 +128,20 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
                     count_found_hits += 1
 
                     push_to_match_dict(full_name, match_dict)
-                    sequence_manipulations(full_name, query_result.seq_len, out_file_matching, alphabet, protein_dict)
+                    sequence_manipulations(full_name, blast_record.query_letters, out_file_matching, alphabet, protein_dict)
+
+                    # blast_record.descriptions[0].e is the expected value of the hit, corresponds to hit->significance in perl
 
                     FILEHANDLE1.write(
-                        "{} {} {} {} {} {} {} {} {} {} {} {} {} {} {}\n".format(full_name, query_result.seq_len,
+                        "{} {} {} {} {} {} {} {} {} {} {} {} {} {:0.2f}% {:0.2f}%\n".format(full_name, blast_record.query_letters,
                                                                                 query_cover_len,
-                                                                                hit.accession, hit.seq_len,
-                                                                                hit.description,
-                                                                                "hit.segnificance", hsp.bitscore,
-                                                                                hsp.query_frame,
+                                                                                hit.accession, hit.length,
+                                                                                hit.title,
+                                                                                blast_record.descriptions[0].e, hsp.bits,
+                                                                                hsp.frame,
                                                                                 hsp.query_start, hsp.query_end,
-                                                                                hsp.hit_start,
-                                                                                hsp.hit_end, hsp.pos_num,
-                                                                                hsp.ident_num))
+                                                                                hsp.sbjct_start,
+                                                                                hsp.sbjct_end, (hsp.positives/hit.length)*100, (hsp.identities/hit.length)*100))
             else:
 
                 if full_name in not_match_dict:
