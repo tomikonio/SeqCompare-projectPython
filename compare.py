@@ -2,6 +2,7 @@ from Bio import SeqIO
 from Bio import SearchIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+from Bio.Blast import NCBIXML
 # from flask_table import Table, Col
 # from beautifultable import BeautifulTable
 import sys
@@ -79,13 +80,14 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
 
     push_fasta_contigs_to_dict(compare_file, protein_dict)
 
-    for query_result in input_protein:
-        query_name = query_result.id
-        query_description = query_result.description
-        full_name = "{} {}".format(query_name, query_description)
+    for blast_record in input_protein:
+        # query_name = query_result.id
+        # query_description = query_result.description
+        # full_name = "{} {}".format(query_name, query_description)
+        full_name = blast_record.query
 
         # output "no hits found" if there is no hits
-        if len(query_result.hit_keys) == 0:
+        if len(blast_record.alignments) == 0:
             # if this protein already exists as not matched, write it to repeating_protein.txt
             if full_name in not_match_dict:
                 print("repeating......")
@@ -94,14 +96,14 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
             else:
 
                 count_found_no_hits += 1
-                FILEHANDLE2.write("{} {}---===***No Hits Found***===---\n".format(full_name, query_result.seq_len))
+                FILEHANDLE2.write("{} {}---===***No Hits Found***===---\n".format(full_name, blast_record.query_letters))
                 # Todo check if len(query_result) is the same as $result->query_length in perl
 
                 # write to dict of all not matching
                 push_to_not_match_dict(full_name, not_match_dict)
 
                 # write to not_matching_protein_fasta
-                sequence_manipulations(full_name, query_result.seq_len, out_file_not_matching, alphabet, protein_dict)
+                sequence_manipulations(full_name, blast_record.query_letters, out_file_not_matching, alphabet, protein_dict)
 
         # hits found
         else:
@@ -192,14 +194,15 @@ def start(input_file, compare_file):
     table = {}
 
     blast_type = "blast-xml"  # blast-xml
-    input_protein = SearchIO.parse(input_file, format=blast_type)
-    progress = 0
+    #input_protein = SearchIO.parse(input_file, format=blast_type)
 
-    with open("matching_protein_fasta", "w") as out_file_matching, open("not_matching_protein_fasta",
+    with open(input_file, "r") as input_protein_handle, open("matching_protein_fasta", "w") as out_file_matching, open("not_matching_protein_fasta",
                                                                         "w") as out_file_not_matching:
         print("making files....")
         # out_file_matching = "matching_protein_fasta"
         # out_file_not_matching = "not_matching_protein_fasta"
+
+        input_protein = NCBIXML.parse(input_protein_handle)
 
         try:
             with open("matching_protein.txt", "w") as FILEHANDLE1, open("not_matching_protein.txt",
