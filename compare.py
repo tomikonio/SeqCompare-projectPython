@@ -3,8 +3,8 @@ from Bio import SearchIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Blast import NCBIXML
+from tabulate import tabulate
 # from flask_table import Table, Col
-# from beautifultable import BeautifulTable
 import sys
 
 
@@ -16,18 +16,13 @@ def push_fasta_contigs_to_dict(compare_file, protein_dict):
     in_file = SeqIO.parse(compare_file, "fasta")
 
     for record in in_file:
-        # query_name = "{} ".format(record.id)
-        # print("record decription is: "+ record.description)
         query_description = record.description
-        # full_name = "{} {}".format(query_name, query_description)
         full_name = "{}".format(query_description)
-        # print("Full name is " + full_name)
         # Substitute multiple spaces with one space and remove trailing spaces.
         full_name = ' '.join(full_name.split())
 
         if full_name not in protein_dict:
             protein_dict[full_name] = record.seq
-    # print(" ")
 
 
 def push_to_match_dict(key, match_dict):
@@ -61,29 +56,29 @@ def sequence_manipulations(key, query_length, output_file, alphabet, protein_dic
 
 def make_compare(compare_file, table, input_protein, out_file_matching, out_file_not_matching, FILEHANDLE1, FILEHANDLE2,
                  FILEHANDLE3):
-    # global count_found_no_hits
-    # global count_found_hits
+
     # Todo test that ncbixml is working correctly
     protein_dict = {}
     match_dict = {}
     not_match_dict = {}
 
-    columns = "Query_Name Query_Length Query_Cover_Length Cover_Perc Acc_No Length Desc E_Value Bit_Score Frame QStart QEnd Hit_Start Hit_End Positives Identical\n"
+    table_headers = ["Query_Name", "Query_Length", "Query_Cover_Length", "Cover_Perc Acc_No", "Length", "Desc",
+                     "E_Value", "Bit_Score", "Frame", "QStart", "QEnd", "Hit_Start", "Hit_End",
+                     "Positives Identical", "Identities"]
+
+    table_matching1 = []
+    table_not_matching2 = []
+    table_format = "simple"
 
     count_found_hits = 0
     count_found_no_hits = 0
 
     alphabet = "protein"
 
-    FILEHANDLE1.write(columns)
-    FILEHANDLE2.write(columns)
-
     push_fasta_contigs_to_dict(compare_file, protein_dict)
 
     for blast_record in input_protein:
-        # query_name = query_result.id
-        # query_description = query_result.description
-        # full_name = "{} {}".format(query_name, query_description)
+
         full_name = blast_record.query
 
         # output "no hits found" if there is no hits
@@ -96,19 +91,20 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
             else:
 
                 count_found_no_hits += 1
-                FILEHANDLE2.write("{} {}---===***No Hits Found***===---\n".format(full_name, blast_record.query_letters))
+                # FILEHANDLE2.write("{} {}---===***No Hits Found***===---\n".format(full_name, blast_record.query_letters))
+                table_not_matching2.append([full_name, blast_record.query_letters, "---===***No Hits Found***===---"])
                 # Todo check if len(query_result) is the same as $result->query_length in perl
 
                 # write to dict of all not matching
                 push_to_not_match_dict(full_name, not_match_dict)
 
                 # write to not_matching_protein_fasta
-                sequence_manipulations(full_name, blast_record.query_letters, out_file_not_matching, alphabet, protein_dict)
+                sequence_manipulations(full_name, blast_record.query_letters, out_file_not_matching, alphabet,
+                                       protein_dict)
 
         # hits found
         else:
-            temp_evalue = -1
-            temp_hsp = ""
+
             hit = blast_record.alignments[0]
             # Todo check if next(query_result.hits) is the same as $result->next_hit in perl
             hsp = hit.hsps[0]
@@ -128,24 +124,27 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
                     count_found_hits += 1
 
                     push_to_match_dict(full_name, match_dict)
-                    sequence_manipulations(full_name, blast_record.query_letters, out_file_matching, alphabet, protein_dict)
+                    sequence_manipulations(full_name, blast_record.query_letters, out_file_matching, alphabet,
+                                           protein_dict)
 
                     # blast_record.descriptions[0].e is the expected value of the hit, corresponds to hit->significance in perl
 
-                    FILEHANDLE1.write(
-                        "{} {} {} {} {} {} {} {} {} {} {} {} {} {:0.2f}% {:0.2f}%\n".format(full_name, blast_record.query_letters,
-                                                                                query_cover_len,
-                                                                                hit.accession, hit.length,
-                                                                                hit.title,
-                                                                                blast_record.descriptions[0].e, hsp.bits,
-                                                                                hsp.frame,
-                                                                                hsp.query_start, hsp.query_end,
-                                                                                hsp.sbjct_start,
-                                                                                hsp.sbjct_end, (hsp.positives/hit.length)*100, (hsp.identities/hit.length)*100))
+
+                    table_matching1.append([full_name, blast_record.query_letters,
+                                   query_cover_len,
+                                   hit.accession, hit.length,
+                                   hit.title,
+                                   blast_record.descriptions[0].e, hsp.bits,
+                                   hsp.frame,
+                                   hsp.query_start, hsp.query_end,
+                                   hsp.sbjct_start,
+                                   hsp.sbjct_end, (hsp.positives / hit.length) * 100,
+                                   (hsp.identities / hit.length) * 100])
+
             else:
 
                 if full_name in not_match_dict:
-                    print("repeating......")
+                    #print("repeating......")
                     FILEHANDLE3.write("{}\t".format(full_name))
                     FILEHANDLE3.write("\n")
                 else:
@@ -156,7 +155,8 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
                     sequence_manipulations(full_name, blast_record.query_letters, out_file_not_matching, alphabet,
                                            protein_dict)
 
-                    FILEHANDLE2.write("{}\t{}\n".format(full_name, blast_record.query_letters))
+                    #FILEHANDLE2.write("{}\t{}\n".format(full_name, blast_record.query_letters))
+                    table_not_matching2.append([full_name, blast_record.query_letters])
 
                     name_and_length = "{}\t {}\n".format(full_name, blast_record.query_letters)
                     fragment = name_and_length[7:]  # slice the first 7 characters off the string (why?)
@@ -172,6 +172,10 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
                     if key not in table:
                         table[key] = []
                     table[key].append(value)
+
+
+    FILEHANDLE1.write(tabulate(table_matching1, headers=table_headers,tablefmt=table_format))
+    FILEHANDLE2.write(tabulate(table_not_matching2, headers=table_headers, tablefmt=table_format))
 
 
 def make_sorted_not_matching_file(table, FILEHANDLE5):
@@ -195,10 +199,11 @@ def start(input_file, compare_file):
     table = {}
 
     blast_type = "blast-xml"  # blast-xml
-    #input_protein = SearchIO.parse(input_file, format=blast_type)
+    # input_protein = SearchIO.parse(input_file, format=blast_type)
 
-    with open(input_file, "r") as input_protein_handle, open("matching_protein_fasta", "w") as out_file_matching, open("not_matching_protein_fasta",
-                                                                        "w") as out_file_not_matching:
+    with open(input_file, "r") as input_protein_handle, open("matching_protein_fasta", "w") as out_file_matching, open(
+            "not_matching_protein_fasta",
+            "w") as out_file_not_matching:
         print("making files....")
         # out_file_matching = "matching_protein_fasta"
         # out_file_not_matching = "not_matching_protein_fasta"
@@ -208,7 +213,7 @@ def start(input_file, compare_file):
         try:
             with open("matching_protein.txt", "w") as FILEHANDLE1, open("not_matching_protein.txt",
                                                                         "w") as FILEHANDLE2, open(
-            "repeating_protein.txt", "w") as FILEHANDLE3:
+                "repeating_protein.txt", "w") as FILEHANDLE3:
 
                 make_compare(compare_file, table, input_protein, out_file_matching, out_file_not_matching, FILEHANDLE1,
                              FILEHANDLE2, FILEHANDLE3)
