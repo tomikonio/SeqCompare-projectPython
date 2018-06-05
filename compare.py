@@ -63,7 +63,7 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
                  FILEHANDLE3):
     # global count_found_no_hits
     # global count_found_hits
-
+    # Todo test that ncbixml is working correctly
     protein_dict = {}
     match_dict = {}
     not_match_dict = {}
@@ -153,12 +153,12 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
                     count_found_no_hits += 1
 
                     push_to_not_match_dict(full_name, not_match_dict)
-                    sequence_manipulations(full_name, query_result.seq_len, out_file_not_matching, alphabet,
+                    sequence_manipulations(full_name, blast_record.query_letters, out_file_not_matching, alphabet,
                                            protein_dict)
 
-                    FILEHANDLE2.write("{}\t{}\n".format(full_name, query_result.seq_len))
+                    FILEHANDLE2.write("{}\t{}\n".format(full_name, blast_record.query_letters))
 
-                    name_and_length = "{}\t {}\n".format(full_name, query_result.seq_len)
+                    name_and_length = "{}\t {}\n".format(full_name, blast_record.query_letters)
                     fragment = name_and_length[7:]  # slice the first 7 characters off the string (why?)
 
                     # full name in position [7] is the start of the query_result.description, this is a number and thus this number
