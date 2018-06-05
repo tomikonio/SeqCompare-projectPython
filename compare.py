@@ -1,9 +1,9 @@
 from Bio import SeqIO
-from Bio import SearchIO
+#from Bio import SearchIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Blast import NCBIXML
-from tabulate import tabulate
+import csv
 # from flask_table import Table, Col
 import sys
 
@@ -61,14 +61,17 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
     protein_dict = {}
     match_dict = {}
     not_match_dict = {}
+    # "Query_Cover_Length", "Cover_Perc", "Acc_No",
 
-    table_headers = ["Query_Name", "Query_Length", "Query_Cover_Length", "Cover_Perc Acc_No", "Length", "Desc",
+    table_headers = ["Query_Name", "Query_Length", "Query_Cover_Length", "Acc_No", "Length", "Desc",
                      "E_Value", "Bit_Score", "Frame", "QStart", "QEnd", "Hit_Start", "Hit_End",
-                     "Positives Identical", "Identities"]
+                     "Positives","Identical"]
 
-    table_matching1 = []
-    table_not_matching2 = []
-    table_format = "simple"
+    csv_writer_matching = csv.writer(FILEHANDLE1)
+    csv_writer_not_matching = csv.writer(FILEHANDLE2)
+
+    csv_writer_matching.writerow(table_headers)
+    csv_writer_not_matching.writerow(table_headers)
 
     count_found_hits = 0
     count_found_no_hits = 0
@@ -92,7 +95,8 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
 
                 count_found_no_hits += 1
                 # FILEHANDLE2.write("{} {}---===***No Hits Found***===---\n".format(full_name, blast_record.query_letters))
-                table_not_matching2.append([full_name, blast_record.query_letters, "---===***No Hits Found***===---"])
+                #table_not_matching2.append([full_name, blast_record.query_letters, "---===***No Hits Found***===---"])
+                csv_writer_not_matching.writerow([full_name, blast_record.query_letters, "---===***No Hits Found***===---"])
                 # Todo check if len(query_result) is the same as $result->query_length in perl
 
                 # write to dict of all not matching
@@ -129,8 +133,7 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
 
                     # blast_record.descriptions[0].e is the expected value of the hit, corresponds to hit->significance in perl
 
-
-                    table_matching1.append([full_name, blast_record.query_letters,
+                    row = [full_name, blast_record.query_letters,
                                    query_cover_len,
                                    hit.accession, hit.length,
                                    hit.title,
@@ -138,8 +141,10 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
                                    hsp.frame,
                                    hsp.query_start, hsp.query_end,
                                    hsp.sbjct_start,
-                                   hsp.sbjct_end, (hsp.positives / hit.length) * 100,
-                                   (hsp.identities / hit.length) * 100])
+                                   hsp.sbjct_end, hsp.positives,
+                                   hsp.identities]
+
+                    csv_writer_matching.writerow(row)
 
             else:
 
@@ -156,7 +161,8 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
                                            protein_dict)
 
                     #FILEHANDLE2.write("{}\t{}\n".format(full_name, blast_record.query_letters))
-                    table_not_matching2.append([full_name, blast_record.query_letters])
+                    #table_not_matching2.append([full_name, blast_record.query_letters])
+                    csv_writer_not_matching.writerow([full_name, blast_record.query_letters])
 
                     name_and_length = "{}\t {}\n".format(full_name, blast_record.query_letters)
                     fragment = name_and_length[7:]  # slice the first 7 characters off the string (why?)
@@ -174,8 +180,8 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
                     table[key].append(value)
 
 
-    FILEHANDLE1.write(tabulate(table_matching1, headers=table_headers,tablefmt=table_format))
-    FILEHANDLE2.write(tabulate(table_not_matching2, headers=table_headers, tablefmt=table_format))
+    # FILEHANDLE1.write(tabulate(table_matching1, headers=table_headers,tablefmt=table_format))
+    # FILEHANDLE2.write(tabulate(table_not_matching2, headers=table_headers, tablefmt=table_format))
 
 
 def make_sorted_not_matching_file(table, FILEHANDLE5):
@@ -211,7 +217,7 @@ def start(input_file, compare_file):
         input_protein = NCBIXML.parse(input_protein_handle)
 
         try:
-            with open("matching_protein.txt", "w") as FILEHANDLE1, open("not_matching_protein.txt",
+            with open("matching_protein.xlsx", "w") as FILEHANDLE1, open("not_matching_protein.xlsx",
                                                                         "w") as FILEHANDLE2, open(
                 "repeating_protein.txt", "w") as FILEHANDLE3:
 
