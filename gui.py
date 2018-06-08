@@ -6,9 +6,11 @@ import subprocess
 import compare
 import run_compare
 import os
+from collections import OrderedDict
 
 
 # TODO make an option to select in which order the files will be compared
+# TODO check if the numbering is working
 
 class Gui(ttk.Frame):
     def __init__(self, root, ):
@@ -22,6 +24,7 @@ class Gui(ttk.Frame):
         self.primary_combo = ""
         self.primary_file = ""
         # self.label_frame = ""
+        self.number_of_files = 0
 
         self.pack()
         self.create_widgets()
@@ -31,17 +34,33 @@ class Gui(ttk.Frame):
     def padd(self):
         for child in self.winfo_children(): child.grid_configure(padx=5, pady=5)
 
+    def check_combo_input(self):
+        for file_name in self.file_combos:
+            # print(self.file_combos[file_name].get())
+            if self.file_combos[file_name][1].current() == -1:
+                messagebox.showinfo("Error", "Please select match/not match for all files")
+                return False
+            elif self.file_combos[file_name][0].current() == -1:
+                messagebox.showinfo("Error", "Please select a number for all files")
+                return False
+            else:
+                return True
+
     def run_script(self):
         # os.chdir(self.folder_path)
-        secondary_files = {}
-        for file_name in self.file_combos:
-            print(self.file_combos[file_name].get())
-            if self.file_combos[file_name].current() == -1:
-                messagebox.showinfo("Error", "Please select match/not match for all files")
-            else:
-                secondary_files[file_name] = "m" if self.file_combos[file_name].get() == "match" else "nm"
-        print(secondary_files)
-        run_compare.start(self.primary_file,secondary_files, self.folder_path)
+        if self.check_combo_input():
+            secondary_files = OrderedDict()
+            for i in range(1, self.number_of_files):
+                for file_name in self.file_combos:
+                    #print(self.file_combos[file_name].get())
+                    # if self.file_combos[file_name][1].current() == -1:
+                    #     messagebox.showinfo("Error", "Please select match/not match for all files")
+                    # elif self.file_combos[file_name][0].current() == -1:
+                    #     messagebox.showinfo("Error", "Please select a number for all files")
+                    if self.file_combos[file_name][0].get() == str(i):
+                        secondary_files[file_name] = "m" if self.file_combos[file_name][1].get() == "match" else "nm"
+            print(secondary_files)
+            run_compare.start(self.primary_file,secondary_files, self.folder_path)
         # subprocess.run(["python", "run_compare.py"])
 
     # def run_compare(self):
@@ -61,6 +80,7 @@ class Gui(ttk.Frame):
                 messagebox.showinfo("Error", "Please select a folder with at least two .fasta files")
             else:
                 print(self.file_dict)
+                self.number_of_files = len(self.file_dict.keys())
                 self.choose_primary()
                 # self.create_file_labels()
 
@@ -80,6 +100,17 @@ class Gui(ttk.Frame):
         self.primary_combo.bind('<<ComboboxSelected>>', self.primary_selected)
         self.primary_combo.grid(column=2, row=5)
         self.padd()
+
+    def combo_number_change(self, event):
+        print(event.widget)
+        #
+        # chosen_number = event.widget.get()
+        # num_list = []
+        #
+        # for file_name in self.file_combos:
+        #     number_combo = self.file_combos[file_name][0]
+        #     if number_combo != event.widget:
+        #         number_combo['values'] =
 
     def create_file_labels(self):
         row = 7
@@ -104,7 +135,13 @@ class Gui(ttk.Frame):
             else:
                 combo = ttk.Combobox(self, values=["match", "not match"], state='readonly')
                 combo.grid(column=column + 1, row=row)
-                self.file_combos[file_name] = combo
+
+                number_list = list(range(1, self.number_of_files))
+                number_combo = ttk.Combobox(self, values=number_list, state='readonly')
+                number_combo.bind('<<ComboboxSelected>>', self.combo_number_change)
+                number_combo.grid(column=column + 2, row=row)
+
+                self.file_combos[file_name] = [number_combo, combo]
 
             row += 1
 
