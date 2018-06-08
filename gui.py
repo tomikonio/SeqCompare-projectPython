@@ -34,7 +34,7 @@ class Gui(ttk.Frame):
         for file in os.scandir(folder_path):
             if file.name.endswith('.fasta'):
                 self.file_dict[file.name] = file.path
-
+        print(self.file_dict)
         self.create_file_labels()
 
     def create_file_labels(self):
@@ -43,7 +43,8 @@ class Gui(ttk.Frame):
         self.file_name_labels.clear()
 
         for file_name in self.file_dict:
-            label = ttk.Label(self, text=file_name).grid()
+            label = ttk.Label(self, text=file_name)
+            label.grid()
             self.file_name_labels.append(label)
 
     def create_widgets(self):
