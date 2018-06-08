@@ -4,8 +4,11 @@ from tkinter import filedialog
 from tkinter import messagebox
 import subprocess
 import compare
+import run_compare
 import os
 
+
+# TODO make an option to select in which order the files will be compared
 
 class Gui(ttk.Frame):
     def __init__(self, root, ):
@@ -18,6 +21,7 @@ class Gui(ttk.Frame):
         self.folder_path = ""
         self.primary_combo = ""
         self.primary_file = ""
+        # self.label_frame = ""
 
         self.pack()
         self.create_widgets()
@@ -29,10 +33,19 @@ class Gui(ttk.Frame):
 
     def run_script(self):
         # os.chdir(self.folder_path)
-        subprocess.run(["python", "run_compare.py"])
+        secondary_files = {}
+        for file_name in self.file_combos:
+            print(self.file_combos[file_name].get())
+            if self.file_combos[file_name].current() == -1:
+                messagebox.showinfo("Error", "Please select match/not match for all files")
+            else:
+                secondary_files[file_name] = "m" if self.file_combos[file_name].get() == "match" else "nm"
+        print(secondary_files)
+        run_compare.start(self.primary_file,secondary_files, self.folder_path)
+        # subprocess.run(["python", "run_compare.py"])
 
-    def run_compare(self):
-        compare.start("compare_output1.xml", "leptolyngbya.fasta")
+    # def run_compare(self):
+    #     compare.start("compare_output1.xml", "leptolyngbya.fasta")
 
     def select_folder(self):
         new_folder_path = filedialog.askdirectory()
@@ -54,6 +67,7 @@ class Gui(ttk.Frame):
     def primary_selected(self, event):
         self.primary_file = self.primary_combo.get()
         print(self.primary_file)
+        ttk.Separator(self, orient=tk.HORIZONTAL)
         self.create_file_labels()
 
 
@@ -68,7 +82,7 @@ class Gui(ttk.Frame):
         self.padd()
 
     def create_file_labels(self):
-        row = 6
+        row = 7
         column = 1
 
         for file_name in self.file_combos:
@@ -78,6 +92,9 @@ class Gui(ttk.Frame):
         for label in self.file_name_labels:
             label.destroy()
         self.file_name_labels.clear()
+
+        # self.label_frame = ttk.Labelframe(self, text="FASTA files")
+        # self.label_frame.grid(column=1, row=6)
 
         for file_name in self.file_dict:
             label = ttk.Label(self, text=file_name)
@@ -94,6 +111,7 @@ class Gui(ttk.Frame):
             self.file_name_labels.append(label)
         button = ttk.Button(self, text='Go', command=self.run_script)
         button.grid(column=column, row=row)
+        # for child in self.label_frame.winfo_children(): child.grid_configure(padx=5, pady=5)
         self.padd()
 
     def create_widgets(self):
@@ -105,7 +123,7 @@ class Gui(ttk.Frame):
 
         label = ttk.Label(self, text='Select a folder:').grid(column=1, row=2)
         button_folder = ttk.Button(self, text='Browse...', command=self.select_folder).grid(column=2, row=2)
-        ttk.Separator(self)
+        ttk.Separator(self, orient=tk.HORIZONTAL)
 
 
 root = tk.Tk()
