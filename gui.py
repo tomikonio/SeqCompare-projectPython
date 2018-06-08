@@ -13,9 +13,15 @@ class Gui(ttk.Frame):
         self.root = root
         self.file_dict = {}
         self.file_name_labels = []
+        self.folder_path = ""
 
         self.pack()
         self.create_widgets()
+
+        self.padd()
+
+
+    def padd(self):
         for child in self.winfo_children(): child.grid_configure(padx=5, pady=5)
 
     def run_script(self):
@@ -25,27 +31,46 @@ class Gui(ttk.Frame):
         compare.start("compare_output1.xml", "leptolyngbya.fasta")
 
     def select_folder(self):
-        folder_path = filedialog.askdirectory()
-        print(folder_path)
+        new_folder_path = filedialog.askdirectory()
+        print(new_folder_path)
 
-        # Todo check if a folder was selected
+        if new_folder_path:
+            self.folder_path = new_folder_path
+            self.file_dict.clear()
+            for file in os.scandir(new_folder_path):
+                if file.name.endswith('.fasta'):
+                    self.file_dict[file.name] = file.path
+            print(self.file_dict)
+            self.choose_primary()
+            self.create_file_labels()
 
-        self.file_dict.clear()
-        for file in os.scandir(folder_path):
-            if file.name.endswith('.fasta'):
-                self.file_dict[file.name] = file.path
-        print(self.file_dict)
-        self.create_file_labels()
+
+    def choose_primary(self):
+        list = []
+        for file_name in self.file_dict:
+            list.append(file_name)
+        combo = ttk.Combobox(self, values=list)
+        combo.grid(column=2, row=5)
 
     def create_file_labels(self):
+        row = 6
+        column = 1
+
         for label in self.file_name_labels:
             label.destroy()
         self.file_name_labels.clear()
 
         for file_name in self.file_dict:
             label = ttk.Label(self, text=file_name)
-            label.grid()
+            label.grid(column=column, row=row)
+
+            combo = ttk.Combobox(self)
+            combo.grid(column = column + 1, row= row)
+
+            row += 1
+
             self.file_name_labels.append(label)
+        self.padd()
 
     def create_widgets(self):
         # button = ttk.Button(self, text='Go', command=self.run_script)
@@ -56,6 +81,7 @@ class Gui(ttk.Frame):
 
         label = ttk.Label(self, text='Select a folder:').grid(column=1,row=2)
         button_folder = ttk.Button(self, text='Browse...', command=self.select_folder).grid(column=2, row=2)
+        ttk.Separator(self)
 
 
 root = tk.Tk()
