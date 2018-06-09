@@ -28,7 +28,7 @@ class Gui(ttk.Frame):
 
         self.pack()
         self.create_widgets()
-
+        self.new_frame = ""
         self.padd()
 
     def padd(self):
@@ -88,11 +88,12 @@ class Gui(ttk.Frame):
     def primary_selected(self, event):
         self.primary_file = self.primary_combo.get()
         print(self.primary_file)
-        ttk.Separator(self, orient=tk.HORIZONTAL)
+        #ttk.Separator(self, orient=tk.HORIZONTAL)
         self.create_file_labels()
 
 
     def choose_primary(self):
+        self.destroy_things()
         list = []
         for file_name in self.file_dict:
             list.append(file_name)
@@ -113,32 +114,50 @@ class Gui(ttk.Frame):
         #     if number_combo != event.widget:
         #         number_combo['values'] =
 
-    def create_file_labels(self):
-        row = 7
-        column = 1
-
+    def destroy_things(self):
+        if self.new_frame != "":
+            self.new_frame.destroy()
         for file_name in self.file_combos:
-            self.file_combos[file_name].destroy()
+            self.file_combos[file_name][0].destroy()
+            self.file_combos[file_name][1].destroy()
         self.file_combos.clear()
 
         for label in self.file_name_labels:
             label.destroy()
         self.file_name_labels.clear()
 
+    def create_file_labels(self):
+        row = 7
+        column = 1
+
+        self.destroy_things()
+        # if self.new_frame != "":
+        #     self.new_frame.destroy()
+        # for file_name in self.file_combos:
+        #     self.file_combos[file_name][0].destroy()
+        #     self.file_combos[file_name][1].destroy()
+        # self.file_combos.clear()
+        #
+        # for label in self.file_name_labels:
+        #     label.destroy()
+        # self.file_name_labels.clear()
+
+        self.new_frame = ttk.Labelframe(self, text="Fasta files")
+        self.new_frame.grid(column=1,row=6, columnspan=3)
         # self.label_frame = ttk.Labelframe(self, text="FASTA files")
         # self.label_frame.grid(column=1, row=6)
 
         for file_name in self.file_dict:
-            label = ttk.Label(self, text=file_name)
+            label = ttk.Label(self.new_frame, text=file_name)
             label.grid(column=column, row=row)
             if file_name == self.primary_file:
-                ttk.Label(self, text="Primary").grid(column=column + 1, row=row)
+                ttk.Label(self.new_frame, text="Primary").grid(column=column + 1, row=row)
             else:
-                combo = ttk.Combobox(self, values=["match", "not match"], state='readonly')
+                combo = ttk.Combobox(self.new_frame, values=["match", "not match"], state='readonly')
                 combo.grid(column=column + 1, row=row)
 
                 number_list = list(range(1, self.number_of_files))
-                number_combo = ttk.Combobox(self, values=number_list, state='readonly')
+                number_combo = ttk.Combobox(self.new_frame, values=number_list, state='readonly')
                 number_combo.bind('<<ComboboxSelected>>', self.combo_number_change)
                 number_combo.grid(column=column + 2, row=row)
 
@@ -147,9 +166,9 @@ class Gui(ttk.Frame):
             row += 1
 
             self.file_name_labels.append(label)
-        button = ttk.Button(self, text='Go', command=self.run_script)
+        button = ttk.Button(self.new_frame, text='Go', command=self.run_script)
         button.grid(column=column, row=row)
-        # for child in self.label_frame.winfo_children(): child.grid_configure(padx=5, pady=5)
+        for child in self.new_frame.winfo_children(): child.grid_configure(padx=5, pady=5)
         self.padd()
 
     def create_widgets(self):
