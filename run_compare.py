@@ -66,7 +66,7 @@ def start(initial_file, compare_files, current_dir):
     current_compare = 1
     input_protein = initial_file
 
-    with open("counts.txt", "w") as FILEHANDLE1:
+    with open("{}/counts.txt".format(current_dir), "w") as FILEHANDLE1:
         print("creating counts file...")
 
         for input_nucl in compare_files:
@@ -89,9 +89,9 @@ def start(initial_file, compare_files, current_dir):
             if next_compare <= total_compares:
                 next_file = "{}_output{}.fasta".format(next_input, current_compare)
 
-                os.mkdir("{}/compare{}".format(dir, next_compare))
+                os.mkdir("{}/compare{}".format(current_dir, next_compare))
 
-                shutil.copyfile(next_input, "{}/compare{}/{}".format(dir, next_compare, next_file))
+                shutil.copyfile(next_input, "{}/compare{}/{}".format(current_dir, next_compare, next_file))
                 input_protein = next_file
                 current_compare += 1
                 print(input_nucl)
