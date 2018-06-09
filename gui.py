@@ -81,6 +81,7 @@ class Gui(ttk.Frame):
             else:
                 print(self.file_dict)
                 self.number_of_files = len(self.file_dict.keys())
+                ttk.Label(self, text="The current folder is {}".format(self.folder_path)).grid(column=3, row=2)
                 self.choose_primary()
                 # self.create_file_labels()
 
@@ -165,6 +166,7 @@ class Gui(ttk.Frame):
 
 root = tk.Tk()
 root.title("SeqCompare")
+root.minsize(800, 480)
 app = Gui(root)
 app.mainloop()
 
