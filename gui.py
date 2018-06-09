@@ -43,8 +43,8 @@ class Gui(ttk.Frame):
             elif self.file_combos[file_name][0].current() == -1:
                 messagebox.showinfo("Error", "Please select a number for all files")
                 return False
-            else:
-                return True
+
+        return True
 
     def run_script(self):
         # os.chdir(self.folder_path)
