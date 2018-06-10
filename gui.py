@@ -17,7 +17,7 @@ class Gui(ttk.Frame):
         self.root = root
         self.file_dict = {}  # store file-name: file-path pairs
         self.file_name_labels = []  # store label objects that are associated with secondary file names
-        self.file_combos = {}   # store combobox objects for secondary files
+        self.file_combos = {}  # store combobox objects for secondary files
         self.folder_path = ""
         self.primary_combo = ""
         self.primary_file = ""
@@ -54,10 +54,18 @@ class Gui(ttk.Frame):
                     if self.file_combos[file_name][0].get() == str(i):
                         secondary_files[file_name] = "m" if self.file_combos[file_name][1].get() == "match" else "nm"
             print(secondary_files)
-            run_compare.start(self.primary_file,secondary_files, self.folder_path)
+            run_compare.start(self.primary_file, secondary_files, self.folder_path)
 
     # def run_compare(self):
     #     compare.start("compare_output1.xml", "leptolyngbya.fasta")
+
+    def check_subfolders(self, new_folder_path):
+        for file in os.scandir(new_folder_path):
+            if file.name == "compare1":
+                messagebox.showinfo("Error",
+                                    "The folder contains subfolders/files named compare_, please remove them before running the script")
+                return False
+        return True
 
     def select_folder(self):
         new_folder_path = filedialog.askdirectory()
@@ -66,24 +74,24 @@ class Gui(ttk.Frame):
         if new_folder_path:
             self.folder_path = new_folder_path
             self.file_dict.clear()
-            for file in os.scandir(new_folder_path):
-                if file.name.endswith('.fasta'):
-                    self.file_dict[file.name] = file.path
-            if len(self.file_dict.keys()) < 2:
-                messagebox.showinfo("Error", "Please select a folder with at least two .fasta files")
-            else:
-                print(self.file_dict)
-                self.number_of_files = len(self.file_dict.keys())
-                ttk.Label(self, text="The current folder is {}".format(self.folder_path)).grid(column=3, row=2)
-                self.choose_primary()
-                # self.create_file_labels()
+            if self.check_subfolders(new_folder_path):
+                for file in os.scandir(new_folder_path):
+                    if file.name.endswith('.fasta'):
+                        self.file_dict[file.name] = file.path
+                if len(self.file_dict.keys()) < 2:
+                    messagebox.showinfo("Error", "Please select a folder with at least two .fasta files")
+                else:
+                    print(self.file_dict)
+                    self.number_of_files = len(self.file_dict.keys())
+                    ttk.Label(self, text="The current folder is {}".format(self.folder_path)).grid(column=3, row=2)
+                    self.choose_primary()
+                    # self.create_file_labels()
 
     def primary_selected(self, event):
         self.primary_file = self.primary_combo.get()
         print(self.primary_file)
-        #ttk.Separator(self, orient=tk.HORIZONTAL)
+        # ttk.Separator(self, orient=tk.HORIZONTAL)
         self.create_file_labels()
-
 
     def choose_primary(self):
         self.destroy_things()
@@ -126,7 +134,7 @@ class Gui(ttk.Frame):
         self.destroy_things()
 
         self.new_frame = ttk.Labelframe(self, text="Fasta files")
-        self.new_frame.grid(column=1,row=6, columnspan=3)
+        self.new_frame.grid(column=1, row=6, columnspan=3)
         # self.label_frame = ttk.Labelframe(self, text="FASTA files")
         # self.label_frame.grid(column=1, row=6)
 
