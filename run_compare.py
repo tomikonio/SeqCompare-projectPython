@@ -8,10 +8,15 @@ import compare
 
 
 
-
-def set_cmd(current_dir, current_compare, input_protein, input_nucl, compare_files):
+def set_cmd(current_dir, current_compare, input_protein, input_nucl, matching_type):
     """
     Construct the BLAST commands, generate the next input type (match/not match)
+
+    :param current_dir: the path to the working directory -- the main directory where the files are located
+    :param current_compare: int, the number of the compare, starts with 1
+    :param input_protein: the primary sequence FASTA file
+    :param input_nucl: FASTA file, the secondary nucleotide sequence file
+    :param matching_type: string, represents if the input_nucl file`s results are to be match/not match
     :return: makeblastdb_cline, tblastn_cline - two blast commands, next_input - the next input type
     """
     os.chdir(current_dir)
@@ -22,17 +27,14 @@ def set_cmd(current_dir, current_compare, input_protein, input_nucl, compare_fil
         os.mkdir(new_dir)
         shutil.copyfile(src=input_protein, dst="{}/{}".format(new_dir, input_protein))
 
-    # Todo copie compare.pl - maybe not needed here
-    # shutil.copyfile(src="compare.py", dst="{}/compare.py".format(new_dir))
     shutil.copyfile(src=input_nucl, dst="{}/{}".format(new_dir, input_nucl))
-    #shutil.copyfile(src=input_protein, dst="{}/{}".format(new_dir, input_protein))
 
     os.chdir(new_dir)
 
     makeblastdb_cline = "makeblastdb -in {} -dbtype nucl".format(input_nucl)
     tblastn_cline = "tblastn -query {} -db {} -out compare_output{}.xml -outfmt 5".format(input_protein, input_nucl,
                                                                                 current_compare)
-    next_input = "matching_protein_fasta" if compare_files[input_nucl] == "m" else "not_matching_protein_fasta"
+    next_input = "matching_protein_fasta" if matching_type == "m" else "not_matching_protein_fasta"
 
     return makeblastdb_cline, tblastn_cline, next_input
 
@@ -70,7 +72,7 @@ def start(initial_file, compare_files, current_dir):
         print("creating counts file...")
 
         for input_nucl in compare_files:
-            makeblastdb_cline, tblastn_cline, next_input = set_cmd(current_dir, current_compare, input_protein, input_nucl, compare_files)
+            makeblastdb_cline, tblastn_cline, next_input = set_cmd(current_dir, current_compare, input_protein, input_nucl, compare_files[input_nucl])
 
             subprocess.run(makeblastdb_cline.split())
             subprocess.run(tblastn_cline.split())
