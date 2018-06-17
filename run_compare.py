@@ -2,7 +2,9 @@
 import os
 import shutil
 import subprocess
-from Bio.Blast.Applications import NcbitblastnCommandline
+import sys
+import json
+from collections import OrderedDict
 import sort
 import compare
 
@@ -100,7 +102,13 @@ def start(initial_file, compare_files, current_dir):
                 print(compare_files[input_nucl])
 
 
+if __name__ == '__main__':
+    primary_file = sys.argv[1]
+    json_dict = sys.argv[2]
+    folder_path = sys.argv[3]
 
+    parsed_dict = json.loads(json_dict, object_pairs_hook=OrderedDict)
+    start(primary_file, parsed_dict, folder_path)
 
 
 # dir = os.getcwd()
