@@ -57,14 +57,6 @@ def count(next_input, input_nucl, FILEHANDLE1):
 
 
 def start(initial_file, compare_files, current_dir):
-    print(current_dir)
-    # current_dir = os.getcwd()
-    # files to be compared with
-    # compare_files = {"fgp2.fasta": "m", "9802.fasta": "m"}
-    # compare_files = {"fgp2.fasta": "m", "9802.fasta": "m", "6803.fasta": "nm", "29413.fasta": "nm", "7120.fasta": "nm",
-    #                  "7942.fasta": "nm"}
-    # match_type = ("m", "m", "nm", "nm", "nm", "nm")
-    # initial_file = "leptolyngbya.fasta"
 
     total_compares = len(compare_files)
     current_compare = 1
@@ -79,12 +71,9 @@ def start(initial_file, compare_files, current_dir):
             subprocess.run(makeblastdb_cline.split())
             subprocess.run(tblastn_cline.split())
 
-            # Todo here call the compare.pl equivalent
-            # subprocess.run(["python", "compare.py", "compare_output{}.xml".format(current_compare), input_protein])
             compare.start("compare_output{}.xml".format(current_compare), input_protein)
             sort.sort(next_input, "sorted_{}.txt".format(next_input))
 
-            # Todo call the count function - what for?
 
             count(next_input, input_nucl, FILEHANDLE1)
 
@@ -109,47 +98,3 @@ if __name__ == '__main__':
 
     parsed_dict = json.loads(json_dict, object_pairs_hook=OrderedDict)
     start(primary_file, parsed_dict, folder_path)
-
-
-# dir = os.getcwd()
-# # files to be compared with
-# compare_files = {"fgp2.fasta": "m", "9802.fasta": "m"}
-# # compare_files = {"fgp2.fasta": "m", "9802.fasta": "m", "6803.fasta": "nm", "29413.fasta": "nm", "7120.fasta": "nm",
-# #                  "7942.fasta": "nm"}
-# # match_type = ("m", "m", "nm", "nm", "nm", "nm")
-# initial_file = "leptolyngbya.fasta"
-#
-# total_compares = len(compare_files)
-# current_compare = 1
-# input_protein = initial_file
-#
-# with open("counts.txt", "w") as FILEHANDLE1:
-#     print("creating counts file...")
-#
-#     for input_nucl in compare_files:
-#         makeblastdb_cline, tblastn_cline, next_input = set_cmd()
-#
-#         subprocess.run(makeblastdb_cline.split())
-#         subprocess.run(tblastn_cline.split())
-#
-#         # Todo here call the compare.pl equivalent
-#         # subprocess.run(["python", "compare.py", "compare_output{}.xml".format(current_compare), input_protein])
-#         compare.start("compare_output{}.xml".format(current_compare), input_protein)
-#         sort.sort(next_input,"sorted_{}.txt".format(next_input))
-#
-#         # Todo call the count function - what for?
-#
-#         count()
-#
-#         # if( $currentCompare <= $totalCompares )
-#         next_compare = current_compare + 1
-#         if next_compare <= total_compares:
-#             next_file = "{}_output{}.fasta".format(next_input, current_compare)
-#
-#             os.mkdir("{}/compare{}".format(dir, next_compare))
-#
-#             shutil.copyfile(next_input, "{}/compare{}/{}".format(dir, next_compare, next_file))
-#             input_protein = next_file
-#             current_compare += 1
-#             print(input_nucl)
-#             print(compare_files[input_nucl])
