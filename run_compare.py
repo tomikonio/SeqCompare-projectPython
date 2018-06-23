@@ -8,6 +8,15 @@ from collections import OrderedDict
 import sort
 import compare
 
+"""
+This file is the entry point of the script.
+It is responsible for managing the folder creation and the execution of the comparisons.
+Can be imported as a module, using the start() method from the importing file.
+Can be used from the command line:
+First argument is the name of the primary file
+Second argument is a JSON string of type '{"name": "m", ...}' - where name - secondary filename, m/nm  - match type
+Third argument is a full path to the fasta files folder
+"""
 
 
 def set_cmd(current_dir, current_compare, input_protein, input_nucl, matching_type):
@@ -25,6 +34,7 @@ def set_cmd(current_dir, current_compare, input_protein, input_nucl, matching_ty
 
     new_dir = "{}/compare{}".format(current_dir, current_compare)
 
+    # copy the primary and secondary files to the new folder
     if current_compare == 1:
         os.mkdir(new_dir)
         shutil.copyfile(src=input_protein, dst="{}/{}".format(new_dir, input_protein))
@@ -33,6 +43,7 @@ def set_cmd(current_dir, current_compare, input_protein, input_nucl, matching_ty
 
     os.chdir(new_dir)
 
+    # construct the BLAST commands to be executed
     makeblastdb_cline = "makeblastdb -in {} -dbtype nucl".format(input_nucl)
     tblastn_cline = "tblastn -query {} -db {} -out compare_output{}.xml -outfmt 5".format(input_protein, input_nucl,
                                                                                 current_compare)
@@ -40,9 +51,13 @@ def set_cmd(current_dir, current_compare, input_protein, input_nucl, matching_ty
 
     return makeblastdb_cline, tblastn_cline, next_input
 
+
 def count(next_input, input_nucl, FILEHANDLE1):
     """
     Counts the number of sequences in the output file (the next input file)
+    :param next_input: the type of the file to be used as the next primary file
+    :param input_nucl: secondary file name
+    :param FILEHANDLE1: count.txt file handle
     :return:
     """
     counter = 0
@@ -57,6 +72,13 @@ def count(next_input, input_nucl, FILEHANDLE1):
 
 
 def start(initial_file, compare_files, current_dir):
+    """
+    Start the script, responsible for creating folders and executing the compare file
+    :param initial_file: the first primary file
+    :param compare_files: an OrderedDict of secondary files and match types
+    :param current_dir: a full path to the directory of the fasta files
+    :return:
+    """
 
     total_compares = len(compare_files)
     current_compare = 1
@@ -77,10 +99,9 @@ def start(initial_file, compare_files, current_dir):
 
             count(next_input, input_nucl, FILEHANDLE1)
 
-            # if( $currentCompare <= $totalCompares )
             next_compare = current_compare + 1
             if next_compare <= total_compares:
-                next_file = "{}_output{}.fasta".format(next_input, current_compare)
+                next_file = "{}_output{}.fasta".format(next_input, current_compare)     # the next primary file
 
                 os.mkdir("{}/compare{}".format(current_dir, next_compare))
 
