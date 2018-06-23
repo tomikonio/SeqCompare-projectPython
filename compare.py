@@ -17,7 +17,7 @@ Can be used separetly from the command line.
 def push_fasta_contigs_to_dict(compare_file, protein_dict):
     """
     Populate the protein dictionary with sequence entries
-    :param compare_fle: name of the current primary file
+    :param compare_file: name of the current primary file
     :param protein_dict: a dictionary containing key-value pairs of (name, sequence) 
     :return:
     """
@@ -34,22 +34,22 @@ def push_fasta_contigs_to_dict(compare_file, protein_dict):
 
 
 def push_to_match_dict(key, match_dict):
-"""
-Push key value pairs of (name, 1) to the match_dict
-:param key: key of a dictionary - a full name of a sequence
-:param match_dict: dictionary containing enteries that signify that they have been matched with the primary file
-:return:
-"""
+    """
+    Push key value pairs of (name, 1) to the match_dict
+    :param key: key of a dictionary - a full name of a sequence
+    :param match_dict: dictionary containing enteries that signify that they have been matched with the primary file
+    :return:
+    """
     match_dict[key] = "1"
 
 
 def push_to_not_match_dict(key, not_match_dict):
-"""
-Push key value pairs of (name, 0) to the not_match_dict
-:param key: key of a dictionary - a full name of a sequence
-:param not_match_dict: dictionary containing enteries that signify that they have not been matched with the primary file
-:return:
-"""
+    """
+    Push key value pairs of (name, 0) to the not_match_dict
+    :param key: key of a dictionary - a full name of a sequence
+    :param not_match_dict: dictionary containing enteries that signify that they have not been matched with the primary file
+    :return:
+    """
     not_match_dict[key] = "0"
 
 
@@ -75,10 +75,22 @@ def sequence_manipulations(key, query_length, output_file, alphabet, protein_dic
 
 def make_compare(compare_file, table, input_protein, out_file_matching, out_file_not_matching, FILEHANDLE1, FILEHANDLE2,
                  FILEHANDLE3):
+    """
+    Make the compare between the primary file and the BLAST output
+    :param compare_file: the primary file
+    :param table: holds entries of records whose hits were above the the 1e-040 threshold
+    :param input_protein: an iterator of BlastRecords - generated from a call to NCBIXML.parse()
+    :param out_file_matching: fasta file handle
+    :param out_file_not_matching: fasta file handle
+    :param FILEHANDLE1: matching_protein.xlsx file handle
+    :param FILEHANDLE2: not_matching_protein.xlsx file handle
+    :param FILEHANDLE3: repeating_protein.txt file handle
+    :return:
+    """
 
-    protein_dict = {}
-    match_dict = {}
-    not_match_dict = {}
+    protein_dict = {}   # dict to have entries from the primary file (compare_file)
+    match_dict = {}     # dict to have entries of matching proteins
+    not_match_dict = {} # dict to have entries of no matching proteins
 
     table_headers = ["Query_Name", "Query_Length", "Query_Cover_Length", "Acc_No", "Length", "Desc",
                      "E_Value", "Bit_Score", "Frame", "QStart", "QEnd", "Hit_Start", "Hit_End",
@@ -141,7 +153,6 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
                     sequence_manipulations(full_name, blast_record.query_letters, out_file_matching, alphabet,
                                            protein_dict)
 
-
                     """
                     Comparing to BioPerl:
                     full_name - $result->query_name . " ",$result->query_description
@@ -183,7 +194,7 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
                     FILEHANDLE3.write("{}\t".format(full_name))
                     FILEHANDLE3.write("\n")
                 else:
-                    # consider the hit as a miss beacuse it is above 1e-040
+                    # consider the hit as a miss because it is above 1e-040
                     count_found_no_hits += 1
 
                     push_to_not_match_dict(full_name, not_match_dict)
@@ -211,9 +222,11 @@ def make_compare(compare_file, table, input_protein, out_file_matching, out_file
 
 def make_sorted_not_matching_file(table, FILEHANDLE5):
     """
-    Outputs the values held in the table dict to the make_sorted_not_matching_protein.txt file
+    Outputs the values held in the table dict to the sorted_not_matching_protein.txt file
     Each line is represents a sequence
     Because one dict entry may hold several sequence names, each dict entry is iterated over
+    :param table: holds entries of records whose hits were above the the 1e-040 threshold
+    :param FILEHANDLE5: sorted_not_matching_protein.txt file handle
     :return:
     """
     key_list = list(table.keys())
@@ -227,24 +240,18 @@ def make_sorted_not_matching_file(table, FILEHANDLE5):
 def start(input_file, compare_file):
     print("Started the compare file")
 
-    table = {}
-
-    blast_type = "blast-xml"  # blast-xml
-    # input_protein = SearchIO.parse(input_file, format=blast_type)
+    table = {}  # holds entries of records whose hits were above the the 1e-040 threshold
 
     with open(input_file, "r") as input_protein_handle, open("matching_protein_fasta", "w") as out_file_matching, open(
             "not_matching_protein_fasta",
             "w") as out_file_not_matching:
         print("making files....")
-        # out_file_matching = "matching_protein_fasta"
-        # out_file_not_matching = "not_matching_protein_fasta"
 
         input_protein = NCBIXML.parse(input_protein_handle)
 
         try:
             with open("matching_protein.xlsx", "w") as FILEHANDLE1, open("not_matching_protein.xlsx",
-                                                                        "w") as FILEHANDLE2, open(
-                "repeating_protein.txt", "w") as FILEHANDLE3:
+                                                                        "w") as FILEHANDLE2, open("repeating_protein.txt", "w") as FILEHANDLE3:
 
                 make_compare(compare_file, table, input_protein, out_file_matching, out_file_not_matching, FILEHANDLE1,
                              FILEHANDLE2, FILEHANDLE3)
